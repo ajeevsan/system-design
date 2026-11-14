@@ -6,7 +6,7 @@ async function bootstrap() {
 
   const port = Number(process.env.USER_SERVICE_PORT ?? 3002);
 
-  await app.listen(port, '127.0.0.1');
+  await app.listen(port, '192.168.0.106');
 
   console.log(`User service is running on port ${port}`);
 }

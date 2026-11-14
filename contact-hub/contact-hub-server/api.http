@@ -37,3 +37,9 @@ Content-Type: application/json
 {
     "firstName" : "Sanjeev"
 }
+
+
+#! Upload service api 
+
+### Check health
+GET http://localhost:3003/uploads/health

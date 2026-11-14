@@ -30,6 +30,7 @@
     "@nestjs/typeorm": "^12.0.3",
     "bullmq": "^6.7.6",
     "busboy": "^1.6.0",
+    "exceljs": "^4.4.0",
     "http-proxy-middleware": "^4.2.1",
     "ioredis": "^5.11.1",
     "reflect-metadata": "^0.2.2",
