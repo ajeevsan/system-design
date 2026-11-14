@@ -1,8 +1,68 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "monorepo": true,
+  "root": "apps/api-gateway",
+  "sourceRoot": "apps/api-gateway/src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "builder": "rspack",
+    "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
+  },
+  "projects": {
+    "api-gateway": {
+      "type": "application",
+      "root": "apps/api-gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/api-gateway/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
+      }
+    },
+    "user-service": {
+      "type": "application",
+      "root": "apps/user-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/user-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/user-service/tsconfig.app.json"
+      }
+    },
+    "upload-service": {
+      "type": "application",
+      "root": "apps/upload-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/upload-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/upload-service/tsconfig.app.json"
+      }
+    },
+    "etl-service": {
+      "type": "application",
+      "root": "apps/etl-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/etl-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/etl-service/tsconfig.app.json"
+      }
+    },
+    "contact-service": {
+      "type": "application",
+      "root": "apps/contact-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/contact-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/contact-service/tsconfig.app.json"
+      }
+    },
+    "sharing-service": {
+      "type": "application",
+      "root": "apps/sharing-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/sharing-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/sharing-service/tsconfig.app.json"
+      }
+    }
   }
 }

@@ -1,0 +1,39 @@
+
+### User Service Health Check
+GET http://localhost:3002/users/health
+
+### API gateway health
+GET http://localhost:3000/health
+
+
+### User login Admin
+POST http://localhost:3002/users/login
+Content-Type: application/json
+
+{
+    "email": "sanjeevmajhi036@gmail.com",
+    "password": "test@123"
+}
+
+### Create employee 
+POST http://localhost:3002/users/employee
+Content-Type: application/json
+
+{
+    "firstName": "Sanjeev",
+    "lastName": "Majhi",
+    "email": "sanjeevmajhi036@gmail.com",
+    "phone": "+91-9972831101"
+}
+
+### Get employee
+GET http://localhost:3002/users/employee
+
+
+### Update employee details
+PATCH http://localhost:3002/users/employee/1
+Content-Type: application/json
+
+{
+    "firstName" : "Sanjeev"
+}
