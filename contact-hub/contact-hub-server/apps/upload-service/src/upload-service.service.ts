@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, PayloadTooLargeException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, PayloadTooLargeException, ServiceUnavailableException, BadRequestException } from '@nestjs/common';
 import type { Request } from 'express';
 import Busboy from 'busboy';
 import { createWriteStream } from 'node:fs';
@@ -10,6 +10,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Upload, UploadStatus } from './entities/upload.entity.js';
 import { UploadQueueService } from './queue/upload-queue.service.js';
+import { UploadQuota } from './entities/upload-quota.entity.js';
+
 
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
@@ -126,11 +128,41 @@ export class UploadServiceService {
         );
       }
 
-      await this.uploadQueue.enqueueUpload({
-        uploadId,
-        employeeId,
-        filePath
-      })
+      // Keep the upload record and daily counter consistent if either write fails.
+      await this.uploadRepository.manager.transaction(async (manager) => {
+        await manager.insert(Upload, {
+          id: uploadId,
+          employeeId,
+          originalFileName,
+          storedFilePath: filePath,
+          fileSize,
+          status: UploadStatus.PENDING,
+        });
+
+        const quotaDate = new Date().toISOString().slice(0, 10);
+        await manager.createQueryBuilder()
+          .insert()
+          .into(UploadQuota)
+          .values({ employeeId, quotaDate, uploadCount: 0 })
+          .orIgnore()
+          .execute();
+        await manager.increment(
+          UploadQuota,
+          { employeeId, quotaDate },
+          'uploadCount',
+          1,
+        );
+      });
+
+      try {
+        await this.uploadQueue.enqueueUpload({ uploadId, employeeId, filePath });
+      } catch (error) {
+        await this.uploadRepository.update(uploadId, {
+          status: UploadStatus.QUEUE_FAILED,
+          errorMeassage: error instanceof Error ? error.message : String(error),
+        });
+        throw new ServiceUnavailableException('Upload could not be queued');
+      }
 
       return {
         uploadId,

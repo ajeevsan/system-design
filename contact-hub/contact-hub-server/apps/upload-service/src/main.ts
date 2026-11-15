@@ -8,7 +8,7 @@ async function bootstrap() {
 
   const port = Number(process.env.UPLOAD_SERVICE_PORT ?? 3003);
 
-  await app.listen(port, '192.168.0.106');
+  await app.listen(port, '127.0.0.1');
 
   console.log(`Upload Service is running on port ${port}`);
 }

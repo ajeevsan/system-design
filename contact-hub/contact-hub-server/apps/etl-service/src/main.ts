@@ -3,6 +3,11 @@ import { EtlServiceModule } from './etl-service.module.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(EtlServiceModule);
-  await app.listen(process.env.port ?? 3000);
+
+  app.enableShutdownHooks();
+
+  await app.init();
+
+  console.log('ETL worker initialized and listening for jobs');
 }
 await bootstrap();
