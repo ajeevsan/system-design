@@ -34,9 +34,9 @@ async function bootstrap() {
   );
 
   expressApp.use(
-    'api/contacts',
+    '/api/contacts',
     createProxyMiddleware({
-      target: 'http://localhost/3005',
+      target: 'http://localhost:3005',
       changeOrigin: true,
       pathRewrite: {
         '^/': '/contacts/',

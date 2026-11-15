@@ -44,6 +44,21 @@
       "path": "./apps/sharing-service/tsconfig.app.json"
     },
     {
+      "path": "./apps/contact-hub-server/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/daily_upload_usage/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/daily_share_usage/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/share-usage-service/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/upload-usage-service/tsconfig.app.json"
+    },
+    {
       "path": "./tsconfig.spec.json"
     }
   ]

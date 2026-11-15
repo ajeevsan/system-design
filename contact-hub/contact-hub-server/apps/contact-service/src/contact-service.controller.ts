@@ -1,5 +1,14 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ContactServiceService } from './contact-service.service.js';
+
+interface ClaimContactsRequest {
+  employeeId: number;
+  limit?: number;
+}
+
+interface CompleteClaimRequest {
+  employeeId: number;
+}
 
 @Controller()
 export class ContactServiceController {
@@ -8,5 +17,18 @@ export class ContactServiceController {
   @Get()
   getHello(): string {
     return this.contactServiceService.getHello();
+  }
+
+  @Post('contacts/claim')
+    claimContacts(@Body() body: ClaimContactsRequest | undefined) {
+      return this.contactServiceService.claimAvailableContacts(body?.employeeId ?? 0, body?.limit);
+  }
+
+  @Post('contacts/claims/:claimToken/contacted')
+  markClaimContacted(
+    @Param('claimToken') claimToken: string,
+     @Body() body: CompleteClaimRequest | undefined,
+  ) {
+     return this.contactServiceService.markClaimContacted(claimToken, body?.employeeId ?? 0);
   }
 }

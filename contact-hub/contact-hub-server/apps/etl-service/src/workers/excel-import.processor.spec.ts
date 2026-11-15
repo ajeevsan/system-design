@@ -4,7 +4,7 @@ import ExcelJS from 'exceljs';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { Contact } from '../../../contact-service/src/entities/contact.entity.js';
+import { Contact, ContactStatus } from '../../../contact-service/src/entities/contact.entity.js';
 import { Upload, UploadStatus } from '../../../upload-service/src/entities/upload.entity.js';
 import { ExcelImportProcessor } from './excel-import.processor.js';
 
@@ -47,6 +47,7 @@ describe('Excel contact import', () => {
     expect(await db.getRepository(Contact).count()).toBe(105);
     expect(await db.getRepository(Contact).findOneByOrFail({ sourceRow: 2 })).toMatchObject({
       name: 'Person 0', email: 'person0@example.com', employeeId: 1, uploadId: 'test-upload', worksheetId: 1,
+      status: ContactStatus.AVAILABLE,
     });
     expect(await db.getRepository(Upload).findOneByOrFail({ id: 'test-upload' })).toMatchObject({
       status: UploadStatus.COMPLETED_WITH_ERRORS, totalRows: 106, succesfulRows: 105, failedRows: 1,
@@ -69,7 +70,9 @@ describe('Excel contact import', () => {
   });
 
   it('rethrows database errors for retry without counting uncommitted rows as successful', async () => {
-    vi.spyOn(db.getRepository(Contact), 'upsert').mockRejectedValueOnce(new Error('database unavailable'));
+    vi.spyOn(db.getRepository(Contact), 'createQueryBuilder').mockImplementationOnce(() => {
+      throw new Error('database unavailable');
+    });
     await expect(run(['Name', 'Email', 'Phone', 'Interest'], [['Alice', 'alice@example.com', '', '']])).rejects.toThrow('database unavailable');
     expect(await db.getRepository(Upload).findOneByOrFail({ id: 'test-upload' })).toMatchObject({
       status: UploadStatus.FAILED, succesfulRows: 0, errorMeassage: 'database unavailable',

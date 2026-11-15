@@ -1,4 +1,4 @@
-import { Contact } from '../../../contact-service/src/entities/contact.entity.js';
+import { Contact, ContactStatus } from '../../../contact-service/src/entities/contact.entity.js';
 
 import { Injectable, Logger } from '@nestjs/common';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
@@ -63,7 +63,12 @@ export class ExcelImportProcessor extends WorkerHost {
     let batch: Partial<Contact>[] = [];
     const flush = async () => {
       if (batch.length === 0) return;
-      await this.contactRepository.upsert(batch, ['uploadId', 'worksheetId', 'sourceRow']);
+      await this.contactRepository.createQueryBuilder()
+        .insert()
+        .into(Contact)
+        .values(batch)
+        .orIgnore()
+        .execute();
       succesfulRows += batch.length;
       batch = [];
       await this.uploadRepository.update(uploadId, { totalRows, succesfulRows, failedRows });
@@ -111,7 +116,8 @@ export class ExcelImportProcessor extends WorkerHost {
             continue;
           }
           batch.push({ uploadId, employeeId: job.data.employeeId, worksheetId,
-            sourceRow: row.number, name, email, phone, interest });
+            sourceRow: row.number, name, email, phone, interest,
+            status: ContactStatus.IMPORTING });
           // Stay below SQLite's parameter limit and bound memory usage.
           if (batch.length >= 50) await flush();
         }
@@ -128,6 +134,11 @@ export class ExcelImportProcessor extends WorkerHost {
         errorMeassage: null,
         completedAt: new Date(),
       });
+
+      await this.contactRepository.update(
+        { uploadId, status: ContactStatus.IMPORTING },
+        { status: ContactStatus.AVAILABLE },
+      );
 
       this.logger.log(
         `ETL finished for ${uploadId}: ${totalRows} rows in ${

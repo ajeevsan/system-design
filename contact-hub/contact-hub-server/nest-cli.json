@@ -19,22 +19,31 @@
         "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
       }
     },
-    "user-service": {
+    "contact-service": {
       "type": "application",
-      "root": "apps/user-service",
+      "root": "apps/contact-service",
       "entryFile": "main",
-      "sourceRoot": "apps/user-service/src",
+      "sourceRoot": "apps/contact-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/user-service/tsconfig.app.json"
+        "tsConfigPath": "apps/contact-service/tsconfig.app.json"
       }
     },
-    "upload-service": {
+    "daily_share_usage": {
       "type": "application",
-      "root": "apps/upload-service",
+      "root": "apps/daily_share_usage",
       "entryFile": "main",
-      "sourceRoot": "apps/upload-service/src",
+      "sourceRoot": "apps/daily_share_usage/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/upload-service/tsconfig.app.json"
+        "tsConfigPath": "apps/daily_share_usage/tsconfig.app.json"
+      }
+    },
+    "daily_upload_usage": {
+      "type": "application",
+      "root": "apps/daily_upload_usage",
+      "entryFile": "main",
+      "sourceRoot": "apps/daily_upload_usage/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/daily_upload_usage/tsconfig.app.json"
       }
     },
     "etl-service": {
@@ -46,13 +55,13 @@
         "tsConfigPath": "apps/etl-service/tsconfig.app.json"
       }
     },
-    "contact-service": {
+    "share-usage-service": {
       "type": "application",
-      "root": "apps/contact-service",
+      "root": "apps/share-usage-service",
       "entryFile": "main",
-      "sourceRoot": "apps/contact-service/src",
+      "sourceRoot": "apps/share-usage-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/contact-service/tsconfig.app.json"
+        "tsConfigPath": "apps/share-usage-service/tsconfig.app.json"
       }
     },
     "sharing-service": {
@@ -62,6 +71,33 @@
       "sourceRoot": "apps/sharing-service/src",
       "compilerOptions": {
         "tsConfigPath": "apps/sharing-service/tsconfig.app.json"
+      }
+    },
+    "upload-service": {
+      "type": "application",
+      "root": "apps/upload-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/upload-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/upload-service/tsconfig.app.json"
+      }
+    },
+    "upload-usage-service": {
+      "type": "application",
+      "root": "apps/upload-usage-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/upload-usage-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/upload-usage-service/tsconfig.app.json"
+      }
+    },
+    "user-service": {
+      "type": "application",
+      "root": "apps/user-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/user-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/user-service/tsconfig.app.json"
       }
     }
   }
