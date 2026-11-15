@@ -43,3 +43,22 @@ Content-Type: application/json
 
 ### Check health
 GET http://localhost:3003/uploads/health
+
+### Upload Excel File
+# @name uploadExcel
+POST http://127.0.0.1:3003/uploads/1
+Content-Type: multipart/form-data; boundary=----ContactHubBoundary
+
+------ContactHubBoundary
+Content-Disposition: form-data; name="employeeId"
+
+1
+------ContactHubBoundary
+Content-Disposition: form-data; name="file"; filename="contacts.xlsx"
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+
+< /home/sanjeev/Documents/Projects/contacts.xlsx
+------ContactHubBoundary--
+
+### Get Upload Status
+GET http://127.0.0.1:3003/uploads/86faaa02-e403-4933-bc39-4c6ebb5bc03d

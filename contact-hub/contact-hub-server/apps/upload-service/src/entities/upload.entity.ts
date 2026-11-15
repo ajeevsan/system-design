@@ -1,6 +1,5 @@
 import {
     Entity,
-    PrimaryGeneratedColumn,
     Column,
     CreateDateColumn,
     UpdateDateColumn,
@@ -16,7 +15,7 @@ export enum UploadStatus {
     QUEUE_FAILED = 'QUEUE_FAILED',
 }
 
-@Entity('uplods')
+@Entity('uploads')
 export class Upload {
     @PrimaryColumn('varchar')
     id: string;
@@ -24,13 +23,13 @@ export class Upload {
     @Column('int')
     employeeId: number;
 
-    @Column()
+    @Column('varchar')
     originalFileName: string;
 
-    @Column()
+    @Column('varchar')
     storedFilePath: string;
 
-    @Column()
+    @Column('int')
     fileSize: number;
 
     @Column({
@@ -49,7 +48,7 @@ export class Upload {
     @Column('int', { default: 0})
     failedRows: number;
 
-    @Column('int', { nullable: true})
+    @Column('text', { nullable: true})
     errorMeassage: string | null;
 
     @CreateDateColumn()

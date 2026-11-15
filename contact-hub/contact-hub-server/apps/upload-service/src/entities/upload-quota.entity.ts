@@ -14,7 +14,7 @@ export class UploadQuota {
     @Column('int')
     employeeId: number;
 
-    @Column()
+    @Column('varchar')
     quotaDate: string;
 
     @Column('int', { default: 0 })
