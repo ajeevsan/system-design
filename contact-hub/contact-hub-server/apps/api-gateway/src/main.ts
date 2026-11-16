@@ -25,12 +25,12 @@ async function bootstrap() {
   expressApp.use(
     '/api/uploads',
     createProxyMiddleware({
-      target: 'http://localhsot:3003',
+      target: 'http://localhost:3003',
       changeOrigin: true,
       pathRewrite: {
         '^/': '/uploads/',
-      }
-    })
+      },
+    }),
   );
 
   expressApp.use(
@@ -40,26 +40,37 @@ async function bootstrap() {
       changeOrigin: true,
       pathRewrite: {
         '^/': '/contacts/',
-      }
-    })
+      },
+    }),
   );
 
   expressApp.use(
-    'api/shares',
+    '/api/shares',
     createProxyMiddleware({
       target: 'http://localhost:3006',
       changeOrigin: true,
       pathRewrite: {
-        '^/': '/shares/'
-      }
-    })
+        '^/': '/shares/',
+      },
+    }),
+  );
+
+  expressApp.use(
+    '/api/share-usage',
+    createProxyMiddleware({
+      target: 'http://localhost:3007',
+      changeOrigin: true,
+      pathRewrite: {
+        '^/': '/share-usage/',
+      },
+    }),
   );
 
   const port = Number(process.env.PORT ?? 3000);
 
   await app.listen(port, '0.0.0.0');
 
-  console.log(`API gateway is running on port ${port}`)
+  console.log(`API gateway is running on port ${port}`);
 }
 
 await bootstrap();

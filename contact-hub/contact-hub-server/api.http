@@ -62,3 +62,23 @@ Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 
 ### Get Upload Status
 GET http://127.0.0.1:3003/uploads/86faaa02-e403-4933-bc39-4c6ebb5bc03d
+
+### Claim up to 2000 contacts (daily per-employee limit)
+POST http://localhost:3000/api/shares/contacts/claim
+Content-Type: application/json
+
+{
+    "employeeId": 1,
+    "limit": 500
+}
+
+### Mark a claimed batch as contacted
+POST http://localhost:3000/api/shares/claims/{{claimToken}}/contacted
+Content-Type: application/json
+
+{
+    "employeeId": 1
+}
+
+### View sharing usage and contacted interests
+GET http://localhost:3000/api/share-usage?employeeId=1&from=2026-01-01&to=2026-12-31
