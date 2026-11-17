@@ -59,6 +59,7 @@ export class ShareUsageServiceService {
       parsedEmployeeId,
       from,
       to,
+      'contactedByEmployeeId',
     );
     const employeeFilter =
       parsedEmployeeId === undefined ? '' : ' WHERE employeeId = ?';
@@ -72,10 +73,10 @@ export class ShareUsageServiceService {
           quotaFilter.parameters,
         ) as Promise<DailyShareRow[]>,
         this.dataSource.query(
-          `SELECT employeeId, date(contactedAt) AS date, COUNT(*) AS contactsUsed
+          `SELECT contactedByEmployeeId AS employeeId, date(contactedAt) AS date, COUNT(*) AS contactsUsed
          FROM contacts${contactFilter.sql}${contactFilter.sql ? ' AND' : ' WHERE'} status = 'CONTACTED'
-           AND contactedAt IS NOT NULL
-         GROUP BY employeeId, date(contactedAt)
+           AND contactedAt IS NOT NULL AND contactedByEmployeeId IS NOT NULL
+         GROUP BY contactedByEmployeeId, date(contactedAt)
          ORDER BY date(contactedAt)`,
           contactFilter.parameters,
         ) as Promise<DailyContactRow[]>,
@@ -86,10 +87,10 @@ export class ShareUsageServiceService {
           employeeParameters,
         ) as Promise<CountRow[]>,
         this.dataSource.query(
-          `SELECT employeeId, interest, COUNT(*) AS contactsUsed
+          `SELECT contactedByEmployeeId AS employeeId, interest, COUNT(*) AS contactsUsed
          FROM contacts${contactFilter.sql}${contactFilter.sql ? ' AND' : ' WHERE'} status = 'CONTACTED'
-           AND contactedAt IS NOT NULL
-         GROUP BY employeeId, interest
+           AND contactedAt IS NOT NULL AND contactedByEmployeeId IS NOT NULL
+         GROUP BY contactedByEmployeeId, interest
          ORDER BY contactsUsed DESC, interest ASC`,
           contactFilter.parameters,
         ) as Promise<InterestRow[]>,
@@ -202,11 +203,12 @@ export class ShareUsageServiceService {
     employeeId?: number,
     from?: string,
     to?: string,
+    employeeColumn = 'employeeId',
   ): { sql: string; parameters: (number | string)[] } {
     const conditions: string[] = [];
     const parameters: (number | string)[] = [];
     if (employeeId !== undefined) {
-      conditions.push('employeeId = ?');
+      conditions.push(`${employeeColumn} = ?`);
       parameters.push(employeeId);
     }
     if (from) {

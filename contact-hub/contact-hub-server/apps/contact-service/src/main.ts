@@ -5,5 +5,6 @@ async function bootstrap() {
   const app = await NestFactory.create(ContactServiceModule);
   const port = Number(process.env.PORT ?? 3005);
   await app.listen(port, '0.0.0.0');
+  console.log(`The contact service is listning at ${port}`);
 }
 await bootstrap();

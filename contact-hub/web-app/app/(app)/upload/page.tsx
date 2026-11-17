@@ -1,3 +1,4 @@
+import { RequireEmployee } from "@/components/employee-session";
 import type { Metadata } from "next";
 import { UploadForm } from "@/components/upload-form";
 
@@ -15,7 +16,7 @@ export default function UploadPage() {
         </p>
       </div>
       <div className="rounded-2xl bg-surface p-4 ring-1 ring-white/10 sm:p-8">
-        <UploadForm />
+        <RequireEmployee><UploadForm /></RequireEmployee>
       </div>
     </main>
   );

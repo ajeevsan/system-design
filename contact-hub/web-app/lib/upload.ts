@@ -6,8 +6,8 @@ export function uploadFile<T = unknown>(
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("POST", url);
-    // xhr.setRequestHeader("Authorization", `Bearer ${token}`); // add once login works
-    // xhr.withCredentials = true; // if you use cookie-based auth
+    xhr.timeout = 120000;
+    xhr.ontimeout = () => reject(new Error("Upload timed out. It may have been accepted; check with your administrator before resubmitting."));
 
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));

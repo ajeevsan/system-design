@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { UserServiceController } from './user-service.controller.js';
 import { UserServiceService } from './user-service.service.js';
+import { UserSession } from './entities/user-session.entity.js';
 import { Employee } from './entities/employee.entity.js';
 
 @Module({
@@ -11,11 +12,11 @@ import { Employee } from './entities/employee.entity.js';
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: 'data/users.sqlite',
-      entities: [Employee],
+      entities: [Employee, UserSession],
       synchronize: true,
     }),
 
-    TypeOrmModule.forFeature([Employee]),
+    TypeOrmModule.forFeature([Employee, UserSession]),
   ],
   controllers: [UserServiceController],
   providers: [UserServiceService],

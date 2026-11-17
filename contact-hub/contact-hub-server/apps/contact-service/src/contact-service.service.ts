@@ -25,6 +25,30 @@ export class ContactServiceService {
     return 'Hello World!';
   }
 
+  async listContacted(employeeId: number, page = 1, search = '') {
+    if (!Number.isInteger(employeeId) || employeeId < 1) {
+      throw new BadRequestException('employeeId must be a positive integer');
+    }
+    if (!Number.isSafeInteger(page) || page < 1 || page > 1000000) {
+      throw new BadRequestException('page must be an integer between 1 and 1000000');
+    }
+    if (search.length > 200) {
+      throw new BadRequestException('search must be 200 characters or fewer');
+    }
+    const pageSize = 25;
+    const query = this.contactRepository.createQueryBuilder('contact')
+      .select(['contact.id', 'contact.name', 'contact.email', 'contact.phone', 'contact.interest', 'contact.contactedAt'])
+      .where('contact.status = :status', { status: ContactStatus.CONTACTED })
+      .andWhere('contact.contactedByEmployeeId = :employeeId', { employeeId });
+    if (search.trim()) {
+      query.andWhere(`(instr(lower(contact.name), :search) > 0 OR instr(lower(contact.email), :search) > 0 OR instr(lower(contact.phone), :search) > 0 OR instr(lower(contact.interest), :search) > 0)`, { search: search.trim().toLowerCase() });
+    }
+    const [contacts, total] = await query
+      .orderBy('contact.contactedAt', 'DESC').addOrderBy('contact.id', 'DESC')
+      .skip((page - 1) * pageSize).take(pageSize).getManyAndCount();
+    return { contacts, total, page, pageSize };
+  }
+
   async claimAvailableContacts(
     employeeId: number,
     requestedLimit = MAX_CLAIM_SIZE,
@@ -57,6 +81,9 @@ export class ContactServiceService {
           .insert()
           .values({ employeeId, quotaDate, contactsShared: 0 })
           .orIgnore()
+          // An ignored SQLite insert has no generated ID on a fresh connection.
+          // Read the quota row by its unique key below instead of hydrating it.
+          .updateEntity(false)
           .execute();
         const usage = await usageRepository.findOneByOrFail({
           employeeId,

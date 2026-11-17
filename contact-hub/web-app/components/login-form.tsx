@@ -1,49 +1,35 @@
 "use client";
-
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
+import { api, type Employee } from "@/lib/api";
 export function LoginForm() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (loading) return;
     setError("");
     const data = new FormData(e.currentTarget);
-    const email = String(data.get("email"));
-    const password = String(data.get("password"));
-
-    if (!email.includes("@")) return setError("Enter a valid email address");
-
+    const email = String(data.get("email") ?? "").trim();
+    const password = String(data.get("password") ?? "");
+    if (!email || !password) return setError("Enter your email and password.");
     setLoading(true);
     try {
-      // TODO: call your API here
-      console.log({ email, password });
-    } finally {
-      setLoading(false);
-    }
+      const result = await api<{ success: boolean; user?: Employee; accessToken?: string }>("/users/login", { method: "POST", body: JSON.stringify({ email, password }) });
+      if (!result.success || !result.user || !Number.isInteger(result.user.id) || !result.accessToken) throw new Error("Invalid email or password.");
+      sessionStorage.setItem("contact-hub.token", result.accessToken);
+      sessionStorage.setItem("contact-hub.employee", JSON.stringify({ ...result.user, email }));
+      router.replace("/upload");
+    } catch (err) { setError(err instanceof Error ? err.message : "Sign in failed."); }
+    finally { setLoading(false); }
   }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <Input id="email" name="email" type="email" label="Email" placeholder="you@example.com" autoComplete="email" required error={error} />
-      <Input id="password" name="password" type="password" label="Password" placeholder="••••••••" autoComplete="current-password" required />
-
-      <div className="flex items-center justify-between text-sm">
-        <label className="flex items-center gap-2 text-muted">
-            <input type="checkbox" className="size-4 rounded border-border accent-brand-500" />
-            Remember me
-        </label>
-        <a href="#" className="font-medium text-brand-400 hover:text-brand-500">
-            Forgot password?
-        </a>
-      </div>
-
-      <Button type="submit" disabled={loading}>
-        {loading ? "Signing in..." : "Sign in"}
-      </Button>
-    </form>
-  );
+  return <form onSubmit={handleSubmit} className="space-y-5">
+    <Input id="email" name="email" type="email" label="Email" autoComplete="email" required disabled={loading} />
+    <Input id="password" name="password" type="password" label="Password" autoComplete="current-password" required disabled={loading} />
+    {error && <p role="alert" className="text-sm text-red-400">{error}</p>}
+    <Button type="submit" disabled={loading}>{loading ? "Signing in…" : "Sign in"}</Button>
+  </form>;
 }
