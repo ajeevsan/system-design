@@ -4,23 +4,26 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { formatBytes, validateExcelFile } from "@/lib/file-validataion";
+import { UploadStatus } from "@/components/upload-status";
+import { useEmployee } from "@/components/employee-session";
 import { uploadFile } from "@/lib/upload";
 
 type Status = "idle" | "uploading" | "success" | "error";
 
 export function UploadForm() {
+  const employee = useEmployee();
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<Status>("idle");
-  const [result, setResult] = useState<unknown>(null);
+  const [result, setResult] = useState<{ uploadId: string } | null>(null);
 
   const uploading = status === "uploading";
 
   function selectFile(selected?: File) {
-    if (!selected) return;
+    if (!selected || uploading) return;
     setStatus("idle");
     setResult(null);
     setProgress(0);
@@ -48,11 +51,12 @@ export function UploadForm() {
     setStatus("uploading");
     setError("");
     try {
-      const data = await uploadFile(
-        `${process.env.NEXT_PUBLIC_API_URL}/documents/upload`, // <- your endpoint
+      const data = await uploadFile<{ uploadId: string }>(
+        `/api/uploads/${employee.id}`,
         file,
         setProgress
       );
+      if (!data.uploadId) throw new Error("Upload accepted but no tracking ID was returned. Do not resubmit until you check with your administrator.");
       setResult(data);
       setStatus("success");
     } catch (err) {
@@ -74,6 +78,7 @@ export function UploadForm() {
         onDrop={(e) => {
           e.preventDefault();
           setDragging(false);
+          if (e.dataTransfer.files.length !== 1) { setError("Choose one spreadsheet at a time."); return; }
           selectFile(e.dataTransfer.files[0]);
         }}
         className={cn(
@@ -91,7 +96,7 @@ export function UploadForm() {
             <span className="text-brand-400">Click to upload</span> or drag and drop
           </p>
           <p className="mt-1 text-xs text-muted sm:text-sm">
-            Excel (.xlsx) only, less than 50 MB
+            Excel (.xlsx) only, up to 50 MiB
           </p>
         </div>
         <input
@@ -152,15 +157,11 @@ export function UploadForm() {
         {uploading ? "Uploading..." : "Upload file"}
       </Button>
 
-      {/* API response */}
-      {status === "success" && (
-        <section aria-label="Upload result" className="space-y-2">
-          <h2 className="text-sm font-semibold text-foreground">Response</h2>
-          <pre className="max-h-80 overflow-auto rounded-xl bg-background p-4 text-xs text-muted ring-1 ring-white/10">
-            {JSON.stringify(result, null, 2)}
-          </pre>
-        </section>
-      )}
+      {status === "success" && result && <>
+        <p role="status" className="text-sm text-emerald-400">Upload accepted. Your spreadsheet will be processed in the background.</p>
+        <UploadStatus key={result.uploadId} uploadId={result.uploadId} />
+        <Button variant="outline" onClick={reset}>Upload another spreadsheet</Button>
+      </>}
     </div>
   );
 }

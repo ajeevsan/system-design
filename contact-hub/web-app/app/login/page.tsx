@@ -14,10 +14,7 @@ export default function LoginPage() {
           <p className="mt-2 text-sm text-muted">Sign in to your account to continue</p>
         </div>
         <LoginForm />
-        <p className="mt-6 text-center text-sm text-muted">
-          Don&apos;t have an account?{" "}
-          <a href="#" className="font-medium text-brand-400 hover:text-brand-500">Sign up</a>
-        </p>
+        <p className="mt-6 text-center text-sm text-muted">Use your Contact Hub employee credentials.</p>
       </div>
     </main>
   );

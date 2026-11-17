@@ -1,3 +1,6 @@
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { Contact, ContactStatus } from './entities/contact.entity.js';
@@ -119,4 +122,66 @@ describe('ContactServiceService', () => {
     });
     expect((await service.claimAvailableContacts(1, 1)).count).toBe(0);
   });
+  it('lists only contacts completed by the requested employee, newest first', async () => {
+    const repository = db.getRepository(Contact);
+    await repository.insert([
+      { ...contact(1, 1, ContactStatus.CONTACTED), contactedByEmployeeId: 1, contactedAt: new Date('2026-01-01') },
+      { ...contact(1, 2, ContactStatus.CONTACTED), contactedByEmployeeId: 1, contactedAt: new Date('2026-01-02') },
+      { ...contact(2, 3, ContactStatus.CONTACTED), contactedByEmployeeId: 2, contactedAt: new Date('2026-01-03') },
+      contact(1, 4),
+    ]);
+    const result = await service.listContacted(1);
+    expect(result.total).toBe(2);
+    expect(result.contacts.map(row => row.name)).toEqual(['Contact 2', 'Contact 1']);
+    expect((await service.listContacted(1, 1, 'CONTACT 1')).total).toBe(1);
+    expect((await service.listContacted(1, 1, '%')).total).toBe(0);
+    expect((await service.listContacted(3)).contacts).toEqual([]);
+  });
+
+  it('paginates contacted history without repeating records', async () => {
+    await db.getRepository(Contact).insert(Array.from({ length: 26 }, (_, index) => ({
+      ...contact(1, index + 1, ContactStatus.CONTACTED), contactedByEmployeeId: 1, contactedAt: new Date('2026-01-01'),
+    })));
+    const first = await service.listContacted(1);
+    const second = await service.listContacted(1, 2);
+    expect(first.contacts).toHaveLength(25);
+    expect(second.contacts).toHaveLength(1);
+    expect(first.total).toBe(26);
+    expect(first.contacts.some(row => row.id === second.contacts[0].id)).toBe(false);
+  });
+
+  it('rejects invalid history filters', async () => {
+    await expect(service.listContacted(0)).rejects.toThrow('employeeId');
+    await expect(service.listContacted(1, 0)).rejects.toThrow('page');
+    await expect(service.listContacted(1, 1.5)).rejects.toThrow('page');
+    await expect(service.listContacted(1, 1, 'a'.repeat(201))).rejects.toThrow('search');
+  });
+
+  it('can claim more than 500 after reconnecting to an existing daily quota row', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'contact-quota-'));
+    const persistent = new DataSource({
+      type: 'sqlite', database: join(directory, 'contacts.sqlite'),
+      entities: [Contact, ShareDailyUsage], synchronize: true,
+    });
+    try {
+      await persistent.initialize();
+      const repository = persistent.getRepository(Contact);
+      for (let offset = 0; offset < 1200; offset += 100) {
+        await repository.insert(Array.from({ length: 100 }, (_, index) => contact(1, offset + index + 1)));
+      }
+      const first = await new ContactServiceService(repository).claimAvailableContacts(1, 500);
+      expect(first.count).toBe(500);
+      await persistent.destroy();
+      await persistent.initialize();
+      const second = await new ContactServiceService(persistent.getRepository(Contact)).claimAvailableContacts(1, 600);
+      expect(second.count).toBe(600);
+      expect(second.dailyUsage).toMatchObject({ used: 1100, remaining: 900 });
+      expect(second.contacts.some(row => first.contacts.some(previous => previous.id === row.id))).toBe(false);
+      expect(await persistent.getRepository(ShareDailyUsage).count()).toBe(1);
+    } finally {
+      if (persistent.isInitialized) await persistent.destroy();
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
 });

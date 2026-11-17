@@ -11,7 +11,7 @@ export function validateExcelFile(file: File): string | null {
     return "This doesn't look like a valid Excel (.xlsx) file.";
   }
   if (file.size === 0) return "This file is empty.";
-  if (file.size >= MAX_FILE_SIZE) return "File must be smaller than 50 MB.";
+  if (file.size > MAX_FILE_SIZE) return "File must be 50 MiB or smaller.";
   return null;
 }
 

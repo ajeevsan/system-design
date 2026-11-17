@@ -78,4 +78,17 @@ describe('ShareUsageServiceService', () => {
       service.getUsage(undefined, '2026-02-02', '2026-02-01'),
     ).rejects.toThrow('on or before');
   });
+  it('counts outreach by the employee who contacted each person and respects date boundaries', async () => {
+    await dataSource.getRepository(Contact).insert([
+      { uploadId: 'stats', employeeId: 9, worksheetId: 1, sourceRow: 1, name: 'One', email: '', phone: '', interest: 'Travel', status: ContactStatus.CONTACTED, contactedByEmployeeId: 3, contactedAt: new Date('2026-01-31T23:59:59Z') },
+      { uploadId: 'stats', employeeId: 3, worksheetId: 1, sourceRow: 2, name: 'Two', email: '', phone: '', interest: 'Other', status: ContactStatus.CONTACTED, contactedByEmployeeId: 9, contactedAt: new Date('2026-01-31T12:00:00Z') },
+      { uploadId: 'stats', employeeId: 9, worksheetId: 1, sourceRow: 3, name: 'Three', email: '', phone: '', interest: 'Travel', status: ContactStatus.CONTACTED, contactedByEmployeeId: 3, contactedAt: new Date('2026-02-01T00:00:00Z') },
+    ]);
+    const report = await service.getUsage('3', '2026-01-01', '2026-01-31');
+    expect(report.users[0].contactsUsed).toBe(1);
+    expect(report.users[0].daily).toEqual([{ date: '2026-01-31', contactsShared: 0, contactsUsed: 1 }]);
+    expect(report.users[0].interests).toEqual([{ interest: 'Travel', contactsUsed: 1 }]);
+    expect((await service.getUsage('3', '2026-03-01', '2026-03-31')).users[0].contactsUsed).toBe(0);
+  });
+
 });

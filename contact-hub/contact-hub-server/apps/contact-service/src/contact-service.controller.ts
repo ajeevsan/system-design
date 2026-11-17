@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ContactServiceService } from './contact-service.service.js';
 
 interface ClaimContactsRequest {
@@ -17,6 +17,15 @@ export class ContactServiceController {
   @Get()
   getHello(): string {
     return this.contactServiceService.getHello();
+  }
+
+  @Get('contacts/contacted')
+  listContacted(
+    @Query('employeeId') employeeId?: string,
+    @Query('page') page?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.contactServiceService.listContacted(Number(employeeId), page === undefined ? 1 : Number(page), search ?? '');
   }
 
   @Post('contacts/claim')

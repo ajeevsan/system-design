@@ -3,10 +3,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "DocUpload",
-    template: "%s | DocUpload",
+    default: "Contact Hub",
+    template: "%s | Contact Hub",
   },
-  description: "Upload documents and view the analysis results.",
+  description: "Upload spreadsheets, monitor processing, and allocate contacts.",
 };
 
 export default function RootLayout({

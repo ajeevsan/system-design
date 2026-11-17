@@ -10,22 +10,25 @@ export class Employee {
   @PrimaryGeneratedColumn()
   employee_id: number;
 
-  @Column({ nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   firstName: string;
   
 
-  @Column({ nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   lastName: string;
 
-  @Column({ unique: true, nullable: false })
+  @Column({ type: 'varchar', unique: true, nullable: false })
   email: string;
 
-  @Column({ unique: true, nullable: false })
+  @Column({ type: 'varchar', unique: true, nullable: false })
   phone: string;
 
-  @Column({ default: 'EMPLOYEE' })
+  @Column({ type: 'text', nullable: true, select: false })
+  passwordHash: string | null;
+
+  @Column({ type: 'varchar', default: 'EMPLOYEE' })
   role: string;
 
-  @Column({ default: 'ACTIVE' })
+  @Column({ type: 'varchar', default: 'ACTIVE' })
   status: string;
 }
